@@ -139,6 +139,11 @@ _G.packer_plugins = {
     path = "/Users/luissastregarcia/.local/share/nvim/site/pack/packer/start/mason.nvim",
     url = "https://github.com/williamboman/mason.nvim"
   },
+  ["mix.nvim"] = {
+    loaded = true,
+    path = "/Users/luissastregarcia/.local/share/nvim/site/pack/packer/start/mix.nvim",
+    url = "https://github.com/brendalf/mix.nvim"
+  },
   ["neo-tree.nvim"] = {
     loaded = true,
     path = "/Users/luissastregarcia/.local/share/nvim/site/pack/packer/start/neo-tree.nvim",

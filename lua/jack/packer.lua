@@ -50,8 +50,9 @@ return require('packer').startup(function(use)
     }
   }
 
-  -- clojure
+  -- Elixir
   use('mhinz/vim-mix-format')
+  use { 'brendalf/mix.nvim', requires = { "nvim-lua/plenary.nvim" } }
 
   -- Clojure
   use('tpope/vim-dispatch')
