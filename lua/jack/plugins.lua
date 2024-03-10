@@ -10,6 +10,8 @@ plugins.setup = {
   { "nvim-tree/nvim-web-devicons" },
   { "MunifTanjim/nui.nvim" },
   { "nvim-neo-tree/neo-tree.nvim",      branch = "v3.x" },
+  { "nvim-treesitter/nvim-treesitter",  build = ":TSUpdate" },
+  { 'nvim-telescope/telescope.nvim',    tag = '0.1.5' },
 
   -- Lsp plugins
   { 'williamboman/mason.nvim' },
