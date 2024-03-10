@@ -1,6 +1,7 @@
 local plugins = require("jack.plugins")
 
 vim.g.mapleader = " "
+vim.g.maplocalleader = ','
 
 -- Package mnanagment with lazy.nvim
 local lazypath = vim.fn.stdpath("data") .. "/lazy/lazy.nvim"
