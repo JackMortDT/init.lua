@@ -1,3 +1,5 @@
+require("jack.set")
+
 local plugins = require("jack.plugins")
 
 vim.g.mapleader = " "
