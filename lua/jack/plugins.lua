@@ -1,6 +1,9 @@
 local M = {}
 
 M.setup = {
+  -- Editor colors
+  { "rose-pine/neovim", name = "rose-pine" },
+
   -- File plugins
   {"nvim-lua/plenary.nvim"},
   {"nvim-tree/nvim-web-devicons"},
