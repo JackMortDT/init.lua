@@ -4,6 +4,8 @@ plugins.setup = {
   -- Code editor
   { "rose-pine/neovim",                 name = "rose-pine" },
   { "folke/neodev.nvim" },
+  { 'nvim-lualine/lualine.nvim' },
+  { 'linrongbin16/lsp-progress.nvim' },
 
   -- File plugins
   { "nvim-lua/plenary.nvim" },
