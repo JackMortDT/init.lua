@@ -3,6 +3,16 @@ local plugins = {}
 plugins.setup = {
   -- Code editor
   { "rose-pine/neovim",                 name = "rose-pine" },
+  {
+    "craftzdog/solarized-osaka.nvim",
+    lazy = false,
+    priority = 1000,
+    opts = {},
+  },
+  {
+    'stevearc/dressing.nvim',
+    opts = {},
+  },
   { "folke/neodev.nvim" },
   { 'nvim-lualine/lualine.nvim' },
   { 'linrongbin16/lsp-progress.nvim' },
