@@ -2,7 +2,6 @@ local plugins = {}
 
 plugins.setup = {
   -- Code editor
-  { "rose-pine/neovim",                 name = "rose-pine" },
   {
     "craftzdog/solarized-osaka.nvim",
     lazy = false,
@@ -21,6 +20,7 @@ plugins.setup = {
   { "nvim-lua/plenary.nvim" },
   { "nvim-tree/nvim-web-devicons" },
   { "MunifTanjim/nui.nvim" },
+  { "VonHeikemen/fine-cmdline.nvim" },
   { "nvim-neo-tree/neo-tree.nvim",      branch = "v3.x" },
   { "nvim-treesitter/nvim-treesitter",  build = ":TSUpdate" },
   { 'nvim-telescope/telescope.nvim',    tag = '0.1.5' },
@@ -35,7 +35,13 @@ plugins.setup = {
   { 'L3MON4D3/LuaSnip' },
 
   -- Clojure
-  { "Olical/conjure" }
+  { "Olical/conjure" },
+
+  -- Other stuff
+  {
+    "nvim-neorg/neorg",
+    build = ":Neorg sync-parsers",
+  },
 }
 
 local lazypath = vim.fn.stdpath("data") .. "/lazy/lazy.nvim"
