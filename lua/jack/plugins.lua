@@ -15,6 +15,8 @@ plugins.setup = {
   { "folke/neodev.nvim" },
   { 'nvim-lualine/lualine.nvim' },
   { 'linrongbin16/lsp-progress.nvim' },
+  { 'rcarriga/nvim-notify' },
+  { "j-hui/fidget.nvim" },
 
   -- File plugins
   { "nvim-lua/plenary.nvim" },
@@ -36,6 +38,13 @@ plugins.setup = {
 
   -- Clojure
   { "Olical/conjure" },
+
+  -- Elixir
+  {
+    "elixir-tools/elixir-tools.nvim",
+    version = "*",
+    event = { "BufReadPre", "BufNewFile" },
+  },
 
   -- Other stuff
   {
