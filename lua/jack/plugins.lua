@@ -26,6 +26,8 @@ plugins.setup = {
   { "nvim-neo-tree/neo-tree.nvim",      branch = "v3.x" },
   { "nvim-treesitter/nvim-treesitter",  build = ":TSUpdate" },
   { 'nvim-telescope/telescope.nvim',    tag = '0.1.5' },
+  { "folke/trouble.nvim" },
+  { "debugloop/telescope-undo.nvim" },
 
   -- Lsp plugins
   { 'williamboman/mason.nvim' },
