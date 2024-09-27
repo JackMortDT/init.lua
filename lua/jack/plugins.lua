@@ -17,17 +17,33 @@ plugins.setup = {
   { 'linrongbin16/lsp-progress.nvim' },
   { 'rcarriga/nvim-notify' },
   { "j-hui/fidget.nvim" },
+  {
+    "ryanmsnyder/toggleterm-manager.nvim",
+    dependencies = {
+      "akinsho/nvim-toggleterm.lua",
+    },
+    config = true,
+  },
 
   -- File plugins
   { "nvim-lua/plenary.nvim" },
   { "nvim-tree/nvim-web-devicons" },
   { "MunifTanjim/nui.nvim" },
   { "VonHeikemen/fine-cmdline.nvim" },
-  { "nvim-neo-tree/neo-tree.nvim",      branch = "v3.x" },
-  { "nvim-treesitter/nvim-treesitter",  build = ":TSUpdate" },
-  { 'nvim-telescope/telescope.nvim',    tag = '0.1.5' },
+  { "nvim-neo-tree/neo-tree.nvim",     branch = "v3.x" },
+  { "nvim-treesitter/nvim-treesitter", build = ":TSUpdate" },
+  { 'nvim-telescope/telescope.nvim',   tag = '0.1.5' },
   { "folke/trouble.nvim" },
   { "debugloop/telescope-undo.nvim" },
+  {
+    "mistricky/codesnap.nvim",
+    build = "make",
+    opts = {
+      save_path = "~/Pictures",
+      has_breadcrumbs = true,
+      bg_theme = "bamboo",
+    }
+  },
 
   -- Lsp plugins
   { 'williamboman/mason.nvim' },
@@ -37,6 +53,7 @@ plugins.setup = {
   { 'hrsh7th/cmp-nvim-lsp' },
   { 'hrsh7th/nvim-cmp' },
   { 'L3MON4D3/LuaSnip' },
+  { 'jackmort/chatgpt.nvim' },
 
   -- Clojure
   { "Olical/conjure" },
