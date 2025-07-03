@@ -49,7 +49,14 @@ plugins.setup = {
   { 'williamboman/mason.nvim' },
   { 'williamboman/mason-lspconfig.nvim' },
   { 'VonHeikemen/lsp-zero.nvim',        branch = 'v3.x' },
-  { 'neovim/nvim-lspconfig' },
+  {
+    'neovim/nvim-lspconfig',
+    --    config = function()
+    --      require("lspconfig").clojure_lsp.setup({
+    --        cmd = { "/Users/luis.sastre/dev/projects/clojure-lsp/clojure-lsp" }
+    --      })
+    --    end
+  },
   { 'hrsh7th/cmp-nvim-lsp' },
   { 'hrsh7th/nvim-cmp' },
   { 'L3MON4D3/LuaSnip' },

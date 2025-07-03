@@ -6,7 +6,7 @@ lsp_zero.on_attach(function(client, bufnr)
 
   vim.keymap.set("n", "gd", function() require('telescope.builtin').lsp_definitions() end, telescope_opts)
   vim.keymap.set("n", "gs", function() require('telescope.builtin').diagnostics() end, telescope_opts)
-  vim.keymap.set("n", "gr", function() require('trouble').toggle('lsp_references') end, telescope_opts)
+  vim.keymap.set("n", "gr", function() require('telescope.builtin').lsp_references() end, telescope_opts)
 
   vim.keymap.set("n", "ga", function() vim.lsp.buf.code_action() end, opts)
   vim.keymap.set("n", "gf", "<cmd>LspZeroFormat<CR>")
