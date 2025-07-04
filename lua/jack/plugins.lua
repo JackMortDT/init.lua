@@ -10,6 +10,16 @@ plugins.setup = {
 
   -- Editor
   {
+    "nvimdev/dashboard-nvim",
+    event = 'VimEnter',
+    lazy = false,
+    priority = 999,
+  },
+  {
+    "karb94/neoscroll.nvim",
+    event = { "VeryLazy" },
+  },
+  {
     "AlexvZyl/nordic.nvim",
     lazy = false,
     priority = 1000,
@@ -30,6 +40,11 @@ plugins.setup = {
   {
     "folke/noice.nvim",
     event = "VeryLazy",
+  },
+  {
+    "nvim-lualine/lualine.nvim",
+    lazy = false,
+    event = { "VeryLazy" }
   },
 
   -- Lsp

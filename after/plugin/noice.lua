@@ -1,5 +1,4 @@
-local M = {}
-M.border_chars_round = { "╭", "─", "╮", "│", "╯", "─", "╰", "│" }
+local chars = require("jack.utils.chars")
 
 local cmdline = {
   format = {
@@ -16,7 +15,7 @@ local cmdline = {
 local views = {
   cmdline_popup = {
     border = {
-      style = M.border_chars_round,
+      style = chars.border_chars_round,
       padding = { 0, 2 },
     },
     position = {
