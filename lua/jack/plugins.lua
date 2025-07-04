@@ -1,17 +1,50 @@
 local plugins = {}
 
 plugins.setup = {
-  -- Code editor
+  -- Common dependencies
+  { "nvim-lua/plenary.nvim" },
+  { "nvim-lua/popup.nvim" },
+  { "nvim-tree/nvim-web-devicons" },
+  { "MunifTanjim/nui.nvim" },
+  { "echasnovski/mini.icons" },
+
+  -- Editor
+  {
+    "AlexvZyl/nordic.nvim",
+    lazy = false,
+    priority = 1000,
+    config = function()
+      require('nordic').load()
+    end
+  },
   {
     "nvim-neo-tree/neo-tree.nvim",
     branch = "v3.x",
-    dependencies = {
-      "nvim-lua/plenary.nvim",
-      "nvim-tree/nvim-web-devicons",
-      "MunifTanjim/nui.nvim",
-    },
     lazy = false,
   },
+  { "nvim-treesitter/nvim-treesitter", build = ":TSUpdate" },
+  {
+    "nvim-telescope/telescope.nvim",
+    tag = "0.1.8"
+  },
+  {
+    "folke/noice.nvim",
+    event = "VeryLazy",
+  },
+
+  -- Lsp
+  { "mason-org/mason.nvim" },
+  { 'mason-org/mason-lspconfig.nvim' },
+  { 'neovim/nvim-lspconfig' },
+  {
+    'VonHeikemen/lsp-zero.nvim',
+    branch = 'v3.x'
+  },
+  { 'hrsh7th/cmp-nvim-lsp' },
+  { 'hrsh7th/nvim-cmp' },
+
+  -- Clojure
+  { "Olical/conjure" },
 }
 
 local lazypath = vim.fn.stdpath("data") .. "/lazy/lazy.nvim"
@@ -21,7 +54,7 @@ if not (vim.uv or vim.loop).fs_stat(lazypath) then
   if vim.v.shell_error ~= 0 then
     vim.api.nvim_echo({
       { "Failed to clone lazy.nvim:\n", "ErrorMsg" },
-      { out, "WarningMsg" },
+      { out,                            "WarningMsg" },
       { "\nPress any key to exit..." },
     }, true, {})
     vim.fn.getchar()

@@ -4,4 +4,5 @@ require("neo-tree").setup({
   enable_diagnostics = true,
 })
 
-vim.keymap.set("n", "<leader>ft", "<cmd>Neotree toggle<cr>", {desc = "NeoTree"})
+vim.keymap.set("n", "<leader>ft", "<cmd>Neotree filesystem toggle<cr>", {desc = "NeoTree"})
+vim.keymap.set("n", "<leader>fm", "<cmd>Neotree float git_status git_base=main<cr>", {desc = "NeoTree"})
