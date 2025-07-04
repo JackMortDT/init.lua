@@ -10,12 +10,6 @@ config.mru = {
 
 config.shortcut = {
     {
-        desc = "󰠮  Notes ",
-        action = "enew | set filetype=markdown",
-        group = "@string",
-        key = "n",
-    },
-    {
         desc = " 󰱼  File ",
         action = "Telescope find_files find_command=rg,--hidden,--files",
         group = "@string",
