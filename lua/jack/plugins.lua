@@ -9,6 +9,7 @@ plugins.setup = {
   { "echasnovski/mini.icons" },
 
   -- Editor
+  { "declancm/maximize.nvim" },
   {
     "nvimdev/dashboard-nvim",
     event = 'VimEnter',
@@ -60,6 +61,14 @@ plugins.setup = {
 
   -- Clojure
   { "Olical/conjure" },
+
+  -- Notes
+  {
+    "nvim-neorg/neorg",
+    lazy = false,
+    version = "*",
+    config = true,
+  },
 }
 
 local lazypath = vim.fn.stdpath("data") .. "/lazy/lazy.nvim"

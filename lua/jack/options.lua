@@ -1,5 +1,4 @@
 -- Define the basic nvim options
-
 local opt = vim.opt
 
 opt.nu = true
