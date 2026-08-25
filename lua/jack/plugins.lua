@@ -25,18 +25,34 @@ plugins.setup = {
     lazy = false,
     priority = 1000,
     config = function()
+      require('nordic').setup({
+        transparent = {
+          bg = true,
+          float = true,
+        },
+      })
       require('nordic').load()
     end
   },
   {
+    'MeanderingProgrammer/render-markdown.nvim',
+    dependencies = { 'nvim-treesitter/nvim-treesitter', 'nvim-tree/nvim-web-devicons' }, -- if you prefer nvim-web-devicons
+    opts = {},
+  },
+  {
     "nvim-neo-tree/neo-tree.nvim",
     branch = "v3.x",
-    lazy = false,
+    cmd = "Neotree",
+    dependencies = {
+      "nvim-lua/plenary.nvim",
+      "nvim-tree/nvim-web-devicons",
+      "MunifTanjim/nui.nvim",
+    },
   },
-  { "nvim-treesitter/nvim-treesitter", build = ":TSUpdate" },
+  { "nvim-treesitter/nvim-treesitter", branch = "main", lazy = false, build = ":TSUpdate" },
   {
     "nvim-telescope/telescope.nvim",
-    tag = "0.1.8"
+    branch = "master",
   },
   {
     "folke/noice.nvim",
@@ -46,6 +62,14 @@ plugins.setup = {
     "nvim-lualine/lualine.nvim",
     lazy = false,
     event = { "VeryLazy" }
+  },
+  {
+    "lewis6991/gitsigns.nvim",
+    event = { "BufReadPre", "BufNewFile" },
+  },
+  {
+    "folke/which-key.nvim",
+    event = "VeryLazy",
   },
 
   -- Lsp
@@ -58,6 +82,8 @@ plugins.setup = {
   },
   { 'hrsh7th/cmp-nvim-lsp' },
   { 'hrsh7th/nvim-cmp' },
+  { 'L3MON4D3/LuaSnip' },
+  { 'saadparwaiz1/cmp_luasnip' },
 
   -- Clojure
   { "Olical/conjure" },

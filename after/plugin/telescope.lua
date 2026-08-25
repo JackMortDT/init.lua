@@ -89,7 +89,6 @@ local defaults = {
 
 TS.setup({
   defaults = defaults,
-  preview = { treesitter = false },
   pickers = {
     diagnostics = { sort_by = "severity", preview_title = "" },
     buffers = picker_buffer,
