@@ -59,6 +59,10 @@ end
 
 local default_z = {
   {
+    "searchcount",
+    color = text_hl,
+  },
+  {
     "location",
     icon = { "", align = "left" },
     fmt = function(str)
@@ -96,7 +100,7 @@ local tree = {
     lualine_y = {},
     lualine_z = default_z,
   },
-  filetypes = { "NvimTree" },
+  filetypes = { "neo-tree" },
 }
 
 local telescope = {
@@ -165,6 +169,22 @@ require("lualine").setup({
         color = get_recording_color,
         padding = 1,
       },
+      {
+        "filetype",
+        icon_only = true,
+        colored = true,
+        padding = { left = 2, right = 1 },
+      },
+      {
+        "filename",
+        path = 0,
+        color = text_hl,
+        symbols = {
+          modified = " ●",
+          readonly = " ",
+          unnamed = "[No Name]",
+        },
+      },
     },
     lualine_x = {
       {
@@ -201,7 +221,17 @@ require("lualine").setup({
         padding = 0,
       },
     },
-    lualine_y = {},
+    lualine_y = {
+      {
+        "fileformat",
+        color = text_hl,
+      },
+      {
+        "encoding",
+        color = text_hl,
+        fmt = string.upper,
+      },
+    },
     lualine_z = default_z,
   },
   options = {
@@ -212,7 +242,7 @@ require("lualine").setup({
   },
   extensions = {
     telescope,
-    ["nvim-tree"] = tree,
+    tree,
   },
 })
 

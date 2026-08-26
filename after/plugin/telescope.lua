@@ -4,25 +4,6 @@ local U = require("jack.utils")
 local prompt_chars = U.border_chars_telescope_default
 local vert_preview_chars = U.border_chars_telescope_default
 
-local picker_buffer = {
-  preview = false,
-  wrap_results = false,
-  layout_config = {
-    height = 0.5,
-    width = 0.6,
-  },
-  sort_mru = true,
-  ignore_current_buffer = true,
-  file_ignore_patters = { "\\." },
-  on_complete = {
-    function(picker)
-      vim.schedule(function()
-        picker:set_selection(0)
-      end)
-    end,
-  },
-}
-
 local picker_register = {
   sort_mru = true,
   preview = false,
@@ -89,9 +70,40 @@ local defaults = {
 
 TS.setup({
   defaults = defaults,
+  extensions = {
+    ["ui-select"] = {
+      layout_strategy = "vertical",
+      preview_title = "",
+      preview = false,
+      wrap_results = false,
+      layout_config = {
+        height = function(_, _, max_lines)
+          return math.min(max_lines, 15)
+        end,
+        width = 0.5,
+      },
+      borderchars = {
+        prompt = prompt_chars,
+        preview = vert_preview_chars,
+        results = U.get_border_chars("telescope"),
+      },
+    },
+    file_browser = {
+      hijack_netrw = true,
+      grouped = true,
+      layout_config = defaults.layout_config,
+      borderchars = defaults.borderchars,
+    },
+    frecency = {
+      show_scores = false,
+      show_unindexed = true,
+      ignore_patterns = { "*.git/*", "*/tmp/*" },
+      layout_config = defaults.layout_config,
+      borderchars = defaults.borderchars,
+    },
+  },
   pickers = {
     diagnostics = { sort_by = "severity", preview_title = "" },
-    buffers = picker_buffer,
     registers = picker_register,
 
     lsp_definitions = small_lsp_layout,
@@ -113,6 +125,11 @@ TS.setup({
   },
 })
 
+pcall(TS.load_extension, "fzf")
+pcall(TS.load_extension, "ui-select")
+pcall(TS.load_extension, "file_browser")
+pcall(TS.load_extension, "frecency")
+
 vim.api.nvim_create_autocmd("User", {
   pattern = "TelescopePreviewerLoaded",
   callback = function()
@@ -123,5 +140,9 @@ vim.api.nvim_create_autocmd("User", {
 local builtin = require('telescope.builtin')
 vim.keymap.set('n', '<leader>ff', builtin.find_files, { desc = 'Telescope find files' })
 vim.keymap.set('n', '<leader>fg', builtin.live_grep, { desc = 'Telescope live grep' })
-vim.keymap.set('n', '<leader>fb', builtin.buffers, { desc = 'Telescope buffers' })
 vim.keymap.set('n', '<leader>fh', builtin.help_tags, { desc = 'Telescope help tags' })
+vim.keymap.set('n', '<leader>fr', builtin.oldfiles, { desc = 'Telescope recent files' })
+vim.keymap.set('n', '<leader>fe', "<cmd>Telescope file_browser<cr>", { desc = 'Telescope file browser' })
+vim.keymap.set('n', '<leader>fF', function()
+  TS.extensions.frecency.frecency()
+end, { desc = 'Telescope frecency' })

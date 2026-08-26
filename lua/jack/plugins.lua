@@ -53,6 +53,16 @@ plugins.setup = {
   {
     "nvim-telescope/telescope.nvim",
     branch = "master",
+    dependencies = {
+      "nvim-lua/plenary.nvim",
+      {
+        "nvim-telescope/telescope-fzf-native.nvim",
+        build = "make",
+      },
+      "nvim-telescope/telescope-ui-select.nvim",
+      "nvim-telescope/telescope-file-browser.nvim",
+      "nvim-telescope/telescope-frecency.nvim",
+    },
   },
   {
     "folke/noice.nvim",
