@@ -28,20 +28,27 @@ end
 local candidates = vim.tbl_filter(fits_screen, digimons)
 local pool = #candidates > 0 and candidates or digimons
 
--- os.time() alone is too coarse and the first math.random() draw right
--- after seeding is weakly distributed for small ranges, so mix in
--- hrtime (nanoseconds) and throw away a few warm-up draws.
-math.randomseed(os.time() + (vim.uv or vim.loop).hrtime())
-math.random()
-math.random()
-math.random()
-local digimon = pool[math.random(#pool)]
+-- nil when ~/.config/digimons is missing or empty. The sprites live in the
+-- dotfiles repo, not in here, so this config has to survive without them —
+-- and math.random(0) is an error, not a nil.
+local digimon
+if #pool > 0 then
+  -- os.time() alone is too coarse and the first math.random() draw right
+  -- after seeding is weakly distributed for small ranges, so mix in
+  -- hrtime (nanoseconds) and throw away a few warm-up draws.
+  math.randomseed(os.time() + (vim.uv or vim.loop).hrtime())
+  math.random()
+  math.random()
+  math.random()
+  digimon = pool[math.random(#pool)]
+end
 
 config.project = { enable = false }
 config.mru = { enable = false }
 config.week_header = { enable = false }
 
-local fits = vim.fn.strwidth(digimon.art[1]) + 4 <= vim.o.columns
+local fits = digimon ~= nil
+  and vim.fn.strwidth(digimon.art[1]) + 4 <= vim.o.columns
   and #digimon.art + 10 <= vim.o.lines
 
 config.header = fits
@@ -91,10 +98,15 @@ local function footer()
   local lazy_stats = require("lazy").stats()
   local ms = math.floor(lazy_stats.startuptime * 100 + 0.5) / 100
 
-  local lines = {
-    "",
-    fits and digimon.catchphrase or ("⚡ " .. digimon.name .. " is out there somewhere"),
-  }
+  local lines = { "" }
+  -- Three cases, not two: the sprite fits, it does not fit but we know who it
+  -- is, or there are no sprites installed at all and the footer just says
+  -- nothing about Digimon.
+  if fits and digimon.catchphrase then
+    table.insert(lines, digimon.catchphrase)
+  elseif digimon then
+    table.insert(lines, "⚡ " .. digimon.name .. " is out there somewhere")
+  end
   if fits and digimon.stats then
     table.insert(lines, stats_line(digimon.stats))
   end
