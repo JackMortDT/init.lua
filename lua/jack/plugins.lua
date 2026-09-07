@@ -81,6 +81,26 @@ plugins.setup = {
     "folke/which-key.nvim",
     event = "VeryLazy",
   },
+  {
+    "lukas-reineke/indent-blankline.nvim",
+    main = "ibl",
+    event = { "BufReadPre", "BufNewFile" },
+  },
+  {
+    "NvChad/nvim-colorizer.lua",
+    event = { "BufReadPre", "BufNewFile" },
+  },
+  {
+    "folke/todo-comments.nvim",
+    dependencies = { "nvim-lua/plenary.nvim" },
+    event = { "BufReadPre", "BufNewFile" },
+  },
+  {
+    "ThePrimeagen/harpoon",
+    branch = "harpoon2",
+    dependencies = { "nvim-lua/plenary.nvim" },
+  },
+  { "levouh/tint.nvim" },
 
   -- Lsp
   { "mason-org/mason.nvim" },
@@ -97,14 +117,6 @@ plugins.setup = {
 
   -- Clojure
   { "Olical/conjure" },
-
-  -- Notes
-  {
-    "nvim-neorg/neorg",
-    lazy = false,
-    version = "*",
-    config = true,
-  },
 }
 
 local lazypath = vim.fn.stdpath("data") .. "/lazy/lazy.nvim"

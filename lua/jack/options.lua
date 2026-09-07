@@ -14,5 +14,8 @@ opt.signcolumn = "yes"
 opt.isfname:append("@-@")
 opt.updatetime =  50
 
+opt.undofile = true
+opt.shortmess:append("I")
+
 vim.g.mapleader = " "
 vim.g.maplocalleader = ','
