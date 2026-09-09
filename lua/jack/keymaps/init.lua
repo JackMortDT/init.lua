@@ -16,3 +16,13 @@ end)
 vim.keymap.set("n", "<leader>?", function()
   require("which-key").show()
 end, { desc = "Show which-key" })
+
+vim.keymap.set("n", "<leader>w", function()
+  local on = not vim.wo.wrap
+  vim.wo.wrap = on
+  vim.wo.linebreak = on
+  vim.wo.breakindent = on
+  vim.notify("wrap " .. (on and "on" or "off"))
+end, { desc = "Toggle line wrap" })
+vim.keymap.set("n", "j", "v:count || !&wrap ? 'j' : 'gj'", { expr = true, desc = "Down" })
+vim.keymap.set("n", "k", "v:count || !&wrap ? 'k' : 'gk'", { expr = true, desc = "Up" })

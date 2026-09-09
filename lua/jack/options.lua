@@ -14,6 +14,9 @@ opt.signcolumn = "yes"
 opt.isfname:append("@-@")
 opt.updatetime =  50
 
+opt.foldlevelstart = 99
+opt.fillchars:append("fold: ")
+
 opt.undofile = true
 opt.shortmess:append("I")
 
