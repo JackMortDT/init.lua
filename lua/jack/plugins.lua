@@ -101,19 +101,22 @@ plugins.setup = {
     dependencies = { "nvim-lua/plenary.nvim" },
   },
   { "levouh/tint.nvim" },
+  {
+    "folke/persistence.nvim",
+    event = "BufReadPre",
+  },
 
   -- Lsp
   { "mason-org/mason.nvim" },
   { 'mason-org/mason-lspconfig.nvim' },
   { 'neovim/nvim-lspconfig' },
   {
-    'VonHeikemen/lsp-zero.nvim',
-    branch = 'v3.x'
+    'saghen/blink.cmp',
+    version = '1.*',
+    -- lsp.lua reaches into blink.cmp before any completion is ever
+    -- triggered (for its LSP capabilities), so it can't stay lazy.
+    lazy = false,
   },
-  { 'hrsh7th/cmp-nvim-lsp' },
-  { 'hrsh7th/nvim-cmp' },
-  { 'L3MON4D3/LuaSnip' },
-  { 'saadparwaiz1/cmp_luasnip' },
 
   -- Clojure
   { "Olical/conjure" },
