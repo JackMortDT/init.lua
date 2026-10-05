@@ -23,6 +23,13 @@ M.diagnostic_signs = {
     other = " ",
 }
 
+-- Small icon set for statusline components. `None` is an empty string so a
+-- component can render "nothing" without lualine collapsing padding oddly.
+M.kind_icons = {
+    Recording = "󰑊 ",
+    None = "",
+}
+
 function M.get_border_chars(desc)
   if desc == "telescope" then
     return M.border_chars_telescope_default

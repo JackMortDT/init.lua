@@ -1,51 +1,67 @@
 # Neovim Configuration
 
-A modular Neovim configuration setup using Lua.
+A modular Neovim configuration in Lua, managed with [lazy.nvim](https://github.com/folke/lazy.nvim).
 
 ## Directory Structure
 
 ```
 nvim/
-├── init.lua                 # Main entry point
-├── jack/
-│   ├── init.lua            # Module initialization
-│   ├── keymaps.lua         # Key mappings
-│   ├── options.lua         # Neovim options and settings
-│   └── plugins.lua         # Plugin management with lazy.nvim
-└── README.md               # This file
+├── init.lua                   # Entry point, just requires jack
+└── lua/jack/
+    ├── init.lua               # Load order: options → keymaps → autocmds → filetypes → lazy
+    ├── options.lua            # vim.opt settings and leader keys
+    ├── keymaps.lua            # Core keymaps (no plugins involved)
+    ├── autocmds.lua           # Core autocommands
+    ├── filetypes.lua          # vim.filetype.add rules
+    ├── lazy.lua               # lazy.nvim bootstrap + setup
+    ├── digimons/              # Sprite loader for the dashboard header
+    ├── lsp/
+    │   ├── init.lua           # Diagnostic/format toggles shared with the statusline
+    │   └── keymaps.lua        # Buffer-local keymaps applied on LspAttach
+    ├── utils/                 # Border chars, icons, small helpers
+    └── plugins/               # One file per plugin, auto-imported by lazy
 ```
 
-## Features
+## How to add a plugin
 
-- **Modular Architecture**: Configuration split into logical modules
-- **Plugin Management**: Uses [lazy.nvim](https://github.com/folke/lazy.nvim) for efficient plugin loading
-- **Custom Keymaps**: Personalized key bindings for improved workflow
-- **Optimized Options**: Tailored Neovim settings for better experience
+Create one file in `lua/jack/plugins/` returning a lazy spec. That's it —
+`lazy.lua` imports the whole directory, so nothing else needs editing.
 
-## Installation
+```lua
+-- lua/jack/plugins/my-plugin.lua
+return {
+  "owner/my-plugin",
+  keys = { { "<leader>x", "<cmd>MyPlugin<cr>", desc = "Do the thing" } },
+  opts = {},
+}
+```
 
-1. Clone or copy this configuration to your Neovim config directory:
-   ```bash
-   ~/.config/nvim/
-   ```
+The rule is **spec and config live together**: the plugin's `opts`/`config`,
+its keymaps and its load trigger all go in that one file. Keymaps declared as
+`keys` double as lazy-load triggers, which is what keeps startup small —
+anything that calls `require("some-plugin")` at startup defeats that.
 
-2. Start Neovim and let lazy.nvim automatically install plugins:
-   ```bash
-   nvim
-   ```
+## Conventions
 
-## Key Components
+- `lazy = true` by default. A spec opts out with `lazy = false` only when it
+  genuinely must run at startup: the colorscheme, treesitter, the dashboard.
+- Plugin keymaps go in the plugin's spec; `keymaps.lua` is only for mappings
+  that work with zero plugins loaded.
+- Anything shared between plugins (icons, border chars, toggle state) goes in
+  `utils/` or `lsp/`, never required from one plugin spec into another.
 
-- **init.lua**: Entry point that loads the main configuration module
-- **jack/**: Main configuration module containing all settings
-- **Plugin System**: Lazy-loaded plugins for optimal startup performance
-- **Custom Settings**: Personalized options and keymaps
+## Toggles
+
+| Key          | Action                        |
+| ------------ | ----------------------------- |
+| `<leader>?`  | which-key                     |
+| `<leader>w`  | line wrap                     |
+| `<leader>ud` | inline (virtual line) diagnostics |
+| `<leader>uf` | format on save                |
 
 ## Requirements
 
-- Neovim >= 0.8
-- Git (for plugin management)
-
----
-
-*Configuration optimized for development workflow and productivity.*
+- Neovim >= 0.11 (uses `vim.lsp.config`, `vim.diagnostic.jump`, `vim.hl`)
+- Git, a C compiler and `make` (treesitter parsers, telescope-fzf-native)
+- Optional: `~/.config/digimons` for the dashboard sprites — the config works
+  fine without it.
