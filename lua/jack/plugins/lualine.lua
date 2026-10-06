@@ -28,20 +28,6 @@ return {
     local green = C.green.base
     local red = C.red.base
 
-    local function get_virtual_text_color()
-      if require("jack.lsp").virtual_diagnostics then
-        return { fg = green }
-      end
-      return icon_hl
-    end
-
-    local function get_format_enabled_color()
-      if require("jack.lsp").format_enabled then
-        return { fg = green }
-      end
-      return icon_hl
-    end
-
     local function get_recording_color()
       if U.is_recording() then
         return { fg = red }
@@ -199,24 +185,25 @@ return {
             color = text_hl,
             icon = { " ", color = icon_hl },
           },
-          -- Indicator for <leader>ud (inline diagnostics toggle).
-          {
-            function()
-              return ""
-            end,
-            color = get_virtual_text_color,
-            separator = { " ", "" },
-          },
-          -- Indicator for <leader>uf (format on save toggle).
-          {
-            function()
-              return "󰉼  "
-            end,
-            color = get_format_enabled_color,
-            padding = 0,
-          },
+          -- One indicator per <leader>u toggle, generated from the
+          -- registry -- adding a toggle adds its icon here for free.
+          unpack(require("jack.toggles").lualine_components({ fg = green }, icon_hl)),
         },
         lualine_y = {
+          -- The session's digimon partner. Static text, like the encoding
+          -- next to it -- :Digimon has the live stats.
+          {
+            function()
+              local partner = require("jack.digimons.partner").get()
+              return partner and partner.name or ""
+            end,
+            cond = function()
+              return require("jack.digimons.partner").get() ~= nil
+            end,
+            icon = { require("jack.digimons.partner").icon(), color = icon_hl },
+            color = text_hl,
+            padding = 1,
+          },
           {
             "fileformat",
             color = text_hl,

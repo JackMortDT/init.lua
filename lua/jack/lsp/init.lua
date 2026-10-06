@@ -1,13 +1,28 @@
--- Shared LSP-adjacent state: the toggles the statusline reads and the
--- keymaps flip. Kept out of the plugin specs so both lualine and
--- lspconfig can require it without creating a load-order dependency.
+-- LSP-adjacent glue: diagnostic presentation and the LspAttach hook.
+-- The on/off state itself is owned by jack.toggles; this module only knows
+-- how to apply it.
 local M = {}
 
+-- Show diagnostic text inline at all.
 M.virtual_diagnostics = true
-M.format_enabled = false
+-- When inline is on: every diagnostic in the buffer, or only the ones on
+-- the cursor's line. Defaults to cursor-line only.
+--
+-- `virtual_lines = true` gives each diagnostic its own screen line, which
+-- on a half-written Clojure form means clojure-lsp's "unresolved symbol"
+-- for every binding at once -- the file visually triples in height while
+-- you type. Cursor-line scoping keeps the full message where you're
+-- working and leaves the rest as signs and undercurl.
+M.diagnostics_all_lines = false
 
 local function apply_diagnostic_config()
-    local signs = require("jack.utils").diagnostic_signs
+    local U = require("jack.utils")
+    local signs = U.diagnostic_signs
+
+    local virtual_lines = false
+    if M.virtual_diagnostics then
+        virtual_lines = M.diagnostics_all_lines or { current_line = true }
+    end
 
     vim.diagnostic.config({
         signs = {
@@ -18,21 +33,36 @@ local function apply_diagnostic_config()
                 [vim.diagnostic.severity.HINT] = signs.hint,
             },
         },
-        virtual_lines = M.virtual_diagnostics,
+        virtual_lines = virtual_lines,
         virtual_text = false,
-        update_in_insert = true,
+        -- Off deliberately: with it on, every keystroke mid-form
+        -- re-renders a wall of "unresolved symbol" for bindings that
+        -- simply aren't typed yet. Diagnostics refresh on leaving insert.
+        update_in_insert = false,
         severity_sort = true,
     })
 
-    -- When the diagnostic text is already shown inline there's no need to
-    -- also underline the offending range; it just adds noise.
-    require("jack.utils").merge_highlights_table({
-        DiagnosticUnderlineError = { undercurl = not M.virtual_diagnostics },
-        DiagnosticUnderlineWarn = { undercurl = not M.virtual_diagnostics },
-        DiagnosticUnderlineHint = { undercurl = not M.virtual_diagnostics },
-        DiagnosticUnderlineOk = { undercurl = not M.virtual_diagnostics },
-        DiagnosticUnderlineInfo = { undercurl = not M.virtual_diagnostics },
+    -- Underline only carries information when the message isn't already
+    -- spelled out on that line. In cursor-line mode it marks everything
+    -- the inline text isn't currently showing.
+    local undercurl = not (M.virtual_diagnostics and M.diagnostics_all_lines)
+    U.merge_highlights_table({
+        DiagnosticUnderlineError = { undercurl = undercurl },
+        DiagnosticUnderlineWarn = { undercurl = undercurl },
+        DiagnosticUnderlineHint = { undercurl = undercurl },
+        DiagnosticUnderlineOk = { undercurl = undercurl },
+        DiagnosticUnderlineInfo = { undercurl = undercurl },
     })
+end
+
+function M.set_virtual_diagnostics(value)
+    M.virtual_diagnostics = value
+    apply_diagnostic_config()
+end
+
+function M.set_diagnostics_all_lines(value)
+    M.diagnostics_all_lines = value
+    apply_diagnostic_config()
 end
 
 -- Called once from the lspconfig spec so the startup state matches what the
@@ -46,20 +76,13 @@ function M.setup()
         group = vim.api.nvim_create_augroup("jack_lsp_attach", { clear = true }),
         callback = function(args)
             require("jack.lsp.keymaps").on_attach(args.buf)
+
+            local client = vim.lsp.get_client_by_id(args.data.client_id)
+            if client then
+                require("jack.lsp.winbar").attach(client, args.buf)
+            end
         end,
     })
-end
-
-function M.toggle_virtual_diagnostics()
-    M.virtual_diagnostics = not M.virtual_diagnostics
-    apply_diagnostic_config()
-    require("jack.utils").refresh_statusline()
-end
-
-function M.toggle_format_enabled()
-    M.format_enabled = not M.format_enabled
-    vim.notify("format on save " .. (M.format_enabled and "on" or "off"))
-    require("jack.utils").refresh_statusline()
 end
 
 return M

@@ -7,9 +7,12 @@ function M.on_attach(bufnr)
     vim.keymap.set(mode, lhs, rhs, { buffer = bufnr, silent = true, desc = desc })
   end
 
+  -- gd/gr genuinely need a client attached, so they stay buffer-local.
+  -- The diagnostics list does not -- it reads vim.diagnostic, which any
+  -- source can write to -- so it lives globally in plugins/trouble.lua
+  -- and plugins/telescope.lua instead.
   map("n", "gd", function() require("telescope.builtin").lsp_definitions() end, "Goto definition")
   map("n", "gr", function() require("telescope.builtin").lsp_references() end, "Goto references")
-  map("n", "gs", function() require("telescope.builtin").diagnostics() end, "Workspace diagnostics")
   map("n", "ga", vim.lsp.buf.code_action, "Code action")
   map("n", "K", vim.lsp.buf.hover, "Hover")
   map("i", "<C-h>", vim.lsp.buf.signature_help, "Signature help")
@@ -22,8 +25,6 @@ function M.on_attach(bufnr)
   -- the deprecated goto_next/goto_prev onto vim.diagnostic.jump.
   map("n", "]d", function() vim.diagnostic.jump({ count = 1, float = true }) end, "Next diagnostic")
   map("n", "[d", function() vim.diagnostic.jump({ count = -1, float = true }) end, "Previous diagnostic")
-
-  map("n", "<leader>ud", require("jack.lsp").toggle_virtual_diagnostics, "Toggle inline diagnostics")
 end
 
 return M

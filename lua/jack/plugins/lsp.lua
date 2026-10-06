@@ -14,6 +14,8 @@ return {
       -- Needed at config time for `get_lsp_capabilities()`, which has to be
       -- set on the '*' base config before any server attaches.
       "saghen/blink.cmp",
+      "b0o/schemastore.nvim",
+      "SmiteshP/nvim-navic",
     },
     config = function()
       require("jack.lsp").setup()
@@ -63,12 +65,28 @@ return {
         settings = { Lua = {} },
       })
 
+      -- Schema validation and key completion for JSON. Matters here
+      -- because of the `*.json.base` filetype rule in jack/filetypes.lua:
+      -- those are config files, and without a schema jsonls can only check
+      -- that the braces balance.
+      vim.lsp.config("jsonls", {
+        settings = {
+          json = {
+            schemas = require("schemastore").json.schemas(),
+            validate = { enable = true },
+          },
+        },
+      })
+
       -- mason-lspconfig's automatic_enable is what replaces lsp-zero's
       -- default_setup: every Mason-installed server gets `vim.lsp.enable()`'d
       -- using nvim-lspconfig's built-in defaults (or the overrides above, for
       -- lua_ls) with no per-server boilerplate needed here.
       require("mason-lspconfig").setup({
-        ensure_installed = { "clojure_lsp" },
+        -- lua_ls is here for this config itself: the `vim.lsp.config`
+        -- block above tunes it for the Neovim runtime, and without the
+        -- server actually installed all of that was dead code.
+        ensure_installed = { "clojure_lsp", "jsonls", "lua_ls" },
         automatic_enable = {
           exclude = { "harper_ls" },
         },
@@ -77,4 +95,5 @@ return {
   },
 
   { "mason-org/mason-lspconfig.nvim", lazy = true },
+  { "b0o/schemastore.nvim", lazy = true },
 }

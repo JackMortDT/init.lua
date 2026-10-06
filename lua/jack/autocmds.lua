@@ -45,6 +45,25 @@ vim.api.nvim_create_autocmd("FileType", {
   end,
 })
 
+-- Make `gf` work on Lua module names, so `require("jack.utils")` jumps to
+-- lua/jack/utils/init.lua. Handy when the thing you edit most is this
+-- config. Lifted from LunarVim, which credits sam4llis/nvim-lua-gf.
+vim.api.nvim_create_autocmd("FileType", {
+  group = augroup("lua_gf"),
+  pattern = "lua",
+  callback = function()
+    ---@diagnostic disable-next-line: assign-type-mismatch
+    vim.opt_local.include = [[\v<((do|load)file|require|reload)[^''"]*[''"]\zs[^''"]+]]
+    vim.opt_local.includeexpr = "substitute(v:fname,'\\.','/','g')"
+    vim.opt_local.suffixesadd:prepend(".lua")
+    vim.opt_local.suffixesadd:prepend("init.lua")
+
+    for _, path in pairs(vim.api.nvim_list_runtime_paths()) do
+      vim.opt_local.path:append(path .. "/lua")
+    end
+  end,
+})
+
 -- Strip trailing whitespace on save, keeping the cursor put. Skips markdown,
 -- where two trailing spaces are a meaningful line break.
 vim.api.nvim_create_autocmd("BufWritePre", {

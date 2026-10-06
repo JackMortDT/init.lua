@@ -21,10 +21,14 @@ return {
       vim.api.nvim_create_autocmd("FileType", {
         group = vim.api.nvim_create_augroup("jack_treesitter", { clear = true }),
         pattern = filetypes,
-        callback = function()
+        callback = function(args)
+          -- Set by bigfile.nvim; parsing a multi-MiB file freezes nvim.
+          if vim.b[args.buf].jack_bigfile then
+            return
+          end
           vim.treesitter.start()
-          vim.wo.foldmethod = "expr"
-          vim.wo.foldexpr = "v:lua.vim.treesitter.foldexpr()"
+          -- Folding is nvim-ufo's now (see plugins/folds.lua); setting
+          -- foldmethod/foldexpr here would fight it for the window.
         end,
       })
     end,

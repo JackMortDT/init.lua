@@ -16,6 +16,12 @@ return {
     { "<leader>fr", function() require("telescope.builtin").oldfiles() end,   desc = "Recent files" },
     { "<leader>fe", "<cmd>Telescope file_browser<cr>",                        desc = "File browser" },
     { "<leader>fF", function() require("telescope").extensions.frecency.frecency() end, desc = "Frecency" },
+    -- Diagnostics as a fuzzy picker: good for "jump to that one error I
+    -- half remember". Trouble (<leader>xx) is the persistent list.
+    -- Global rather than buffer-local on LspAttach: vim.diagnostic is not
+    -- LSP-only, and the key should exist even with no client attached.
+    { "<leader>xt", function() require("telescope.builtin").diagnostics() end, desc = "Diagnostics (picker)" },
+    { "gs",         function() require("telescope.builtin").diagnostics() end, desc = "Diagnostics (picker)" },
   },
   config = function()
     local TS = require("telescope")

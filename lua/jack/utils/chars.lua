@@ -23,6 +23,37 @@ M.diagnostic_signs = {
     other = " ",
 }
 
+-- LSP symbol kinds, used by nvim-navic for the winbar breadcrumbs. Keys
+-- are the names from the LSP spec, so they map 1:1 onto navic's config.
+M.navic_icons = {
+    File = " ",
+    Module = " ",
+    Namespace = " ",
+    Package = " ",
+    Class = " ",
+    Method = " ",
+    Property = " ",
+    Field = " ",
+    Constructor = " ",
+    Enum = " ",
+    Interface = " ",
+    Function = " ",
+    Variable = " ",
+    Constant = " ",
+    String = " ",
+    Number = " ",
+    Boolean = " ",
+    Array = " ",
+    Object = " ",
+    Key = " ",
+    Null = " ",
+    EnumMember = " ",
+    Struct = " ",
+    Event = " ",
+    Operator = " ",
+    TypeParameter = " ",
+}
+
 -- Small icon set for statusline components. `None` is an empty string so a
 -- component can render "nothing" without lualine collapsing padding oddly.
 M.kind_icons = {

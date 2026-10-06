@@ -21,39 +21,18 @@ return {
 
     local dt_greeting = os.date("%Y-%m-%d %H:%M:%S") .. "  ·  " .. greeting()
 
-    -- Each sprite "pixel" is a fullwidth emoji (~2 cols), so a digimon needs
-    -- roughly (#art[1] * 2) columns and (#art + a few) lines to look right.
-    -- In a narrow tmux split there's no room for that, so fall back to a
-    -- plain text header instead of a squashed/wrapped sprite.
-    local digimons = require("jack.digimons").digimons
+    -- The session partner, not a fresh roll: whatever shows up here is the
+    -- same one :Digimon and the statusline report. nil when
+    -- ~/.config/digimons is missing or empty -- the sprites live in the
+    -- dotfiles repo, so this has to survive without them.
+    local partner = require("jack.digimons.partner")
+    local digimon = partner.get()
 
-    local function fits_screen(candidate)
-      local needed_cols = vim.fn.strwidth(candidate.art[1]) + 4
-      local needed_lines = #candidate.art + 10
-      return vim.o.columns >= needed_cols and vim.o.lines >= needed_lines
-    end
-
-    local candidates = vim.tbl_filter(fits_screen, digimons)
-    local pool = #candidates > 0 and candidates or digimons
-
-    -- nil when ~/.config/digimons is missing or empty. The sprites live in
-    -- the dotfiles repo, not in here, so this config has to survive without
-    -- them -- and math.random(0) is an error, not a nil.
-    local digimon
-    if #pool > 0 then
-      -- os.time() alone is too coarse and the first math.random() draw right
-      -- after seeding is weakly distributed for small ranges, so mix in
-      -- hrtime (nanoseconds) and throw away a few warm-up draws.
-      math.randomseed(os.time() + (vim.uv or vim.loop).hrtime())
-      math.random()
-      math.random()
-      math.random()
-      digimon = pool[math.random(#pool)]
-    end
-
-    -- Re-checked rather than reusing fits_screen: the chosen digimon may
-    -- come from the unfiltered pool when nothing fit.
-    local fits = digimon ~= nil and fits_screen(digimon)
+    -- The partner falls back to the full roster when nothing fits the
+    -- window, so a sprite that was picked may still be too big to draw.
+    -- In a narrow tmux split, show a plain text header instead of a
+    -- squashed one.
+    local fits = partner.fits(digimon)
 
     config.project = { enable = false }
     config.mru = { enable = false }
@@ -81,6 +60,12 @@ return {
         action = "Lazy profile",
         group = "@string",
         key = "p",
+      },
+      {
+        desc = (partner.icon() ~= "" and partner.icon() .. "  " or " 󰄛  ") .. "Partner ",
+        action = "Digimon",
+        group = "@string",
+        key = "d",
       },
       {
         desc = " 󰅙  Quit ",

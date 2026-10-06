@@ -31,7 +31,8 @@ require("lazy").setup({
     lazy = true,
   },
   install = { colorscheme = { "nordic" } },
-  ui = { border = "rounded" },
+  -- No `ui.border` here: it now follows the global `winborder` set in
+  -- options.lua.
   change_detection = { notify = false },
   performance = {
     rtp = {
