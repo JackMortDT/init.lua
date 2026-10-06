@@ -118,6 +118,8 @@ file.
 | Key | Action |
 | --- | ------ |
 | `<leader>?` | which-key |
+| `<leader>ff` / `<leader>fg` | find / grep, scoped to the project around the current file |
+| `<leader>fA` / `<leader>fG` | find / grep across the whole repo |
 | `<leader>xx` / `<leader>xX` | diagnostics list: project / this buffer (Trouble) |
 | `gs`, `<leader>xt` | diagnostics as a fuzzy picker (Telescope) |
 | `<leader>bd` / `<leader>bD` | close buffer, keep the split layout (`:BufferKill`) |
@@ -156,6 +158,36 @@ not for warnings.
 
 The whole directory is optional. With no sprites installed everything
 no-ops: no statusline component, and `:Digimon` says where it looked.
+
+## Scala / Metals
+
+`nvim-metals` drives Metals itself — it is excluded from
+`mason-lspconfig`'s `automatic_enable`, since letting lspconfig also start a
+client gives you two fighting over the same buffer.
+
+Build server is **Bloop**, not sbt BSP, despite sbt BSP being the better fit
+for a monorepo on paper. sbt BSP reportedly does not work against the sbt
+1.4.x that the monorepo this was set up for pins. Flip it with
+`vim.g.jack_metals_sbt_bsp = true`.
+
+The build JDK is resolved by reading each candidate's own `release` file,
+never by trusting `/usr/libexec/java_home -v <version>` — on this machine
+that exits 0 and hands back a JDK 26 install no matter which version you
+ask for. `:MetalsJdk` shows what was picked and whether it satisfies the
+project's `.java-version`; a mismatch warns once per project per session.
+
+## Monorepos
+
+`<leader>ff` and `<leader>fg` scope themselves to the innermost directory
+above the current file that looks like a project (`src/`, `build.sbt`,
+`project.clj`, `deps.edn`, ...), clamped to the editor's cwd.
+`<leader>fA` / `<leader>fG` are the unscoped versions.
+
+In a single-project repo both pairs do the same thing, so this costs
+nothing there. It matters in a monorepo: on a ~115k-file Scala repo a
+content search takes ~2.85s from the repo root versus ~51ms
+inside one subproject — and `live_grep` re-runs ripgrep on every keystroke,
+so the unscoped version is unusable for typing.
 
 ## Large files
 

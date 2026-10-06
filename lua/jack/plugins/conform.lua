@@ -25,6 +25,8 @@ return {
       lua = { "stylua" },
       json = { "jq" },
       jsonc = { "jq" },
+      -- Picks up whatever .scalafmt.conf the project ships.
+      scala = { "scalafmt" },
     },
     default_format_opts = { lsp_format = "fallback" },
     format_on_save = function()

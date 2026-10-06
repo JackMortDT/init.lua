@@ -88,7 +88,11 @@ return {
         -- server actually installed all of that was dead code.
         ensure_installed = { "clojure_lsp", "jsonls", "lua_ls" },
         automatic_enable = {
-          exclude = { "harper_ls" },
+          -- metals is driven by nvim-metals (plugins/metals.lua), which
+          -- installs the server and attaches the client itself. Letting
+          -- lspconfig enable it too starts a second client on the same
+          -- buffer.
+          exclude = { "harper_ls", "metals" },
         },
       })
     end,

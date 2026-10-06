@@ -3,8 +3,8 @@
 -- per filetype by hand.
 -- markdown/markdown_inline are here for render-markdown.nvim, which needs
 -- both parsers to render anything.
-local parsers = { "lua", "clojure", "elixir", "json", "markdown", "markdown_inline" }
-local filetypes = { "lua", "clojure", "elixir", "json", "jsonc", "markdown" }
+local parsers = { "lua", "clojure", "elixir", "json", "markdown", "markdown_inline", "scala" }
+local filetypes = { "lua", "clojure", "elixir", "json", "jsonc", "markdown", "scala" }
 
 return {
   {
