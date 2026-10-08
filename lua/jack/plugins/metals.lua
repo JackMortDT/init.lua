@@ -21,6 +21,13 @@
 -- you can watch it:
 --     sbt bloopInstall          # after Metals has written project/metals.sbt
 -- then restart the build server.
+--
+-- Under v2 (below) a build server is optional: first-party navigation
+-- comes from v2's own index and needs no build at all. It is still what
+-- resolves third-party dependencies, tests and debugging, so these
+-- settings keep mattering the moment you connect one. Note that Metals
+-- connects to -- or starts -- a build server regardless; removing the
+-- export directory only makes it connect to an empty one.
 local M = {}
 
 -- Keyed by jdk+pin so each project warns at most once per session.
@@ -30,9 +37,9 @@ local warned = {}
 -- `.java-version` usually means it, and running the wrong JDK against an
 -- old toolchain causes JVM crashes rather than clean errors -- worth
 -- checking instead of silently using whatever is around.
-local function pinned_jdk()
+local function pinned_jdk(from)
   local found = vim.fs.find(".java-version", {
-    path = vim.fn.getcwd(),
+    path = from,
     upward = true,
     type = "file",
   })[1]
@@ -151,24 +158,87 @@ function M.find_server_jdk()
   return pick(jdks_by_major(), { "21", "17", "25", "26" })
 end
 
+-- The JDK an existing Bloop export was generated with.
+--
+-- `sbt bloopInstall` bakes whatever JVM it ran under into every config it
+-- writes, as `platform.config.home`, and that is the JDK Bloop will
+-- actually compile with. If Metals is told a different one it pops "Java
+-- home has been updated, do you want to reconnect to the BSP server?" on
+-- every start, and accepting changes the compile setup Zinc keys its
+-- incremental analysis on -- which throws away every target compiled so
+-- far. Seen here: 446 configs exported under JDK 11 against a repo
+-- pinning 1.8 in .java-version.
+--
+-- So when an export exists it outranks the pin: it is a fact about what
+-- will run, where the pin is only an intention. Disagreement is reported
+-- rather than silently resolved -- the way to change it is to re-run
+-- `sbt bloopInstall` under the JDK you want.
+--
+-- Only `.bloop` counts, never a parked copy; if it is not there, Metals
+-- will not be reading it either. The configs carry the full classpath and
+-- run to half a megabyte of pretty-printed JSON, so this matches on the
+-- text rather than parsing it -- `home` appears only under
+-- platform.config and its identical runtimeConfig twin. The whole file
+-- has to be read regardless: the key sits wherever the classpath above it
+-- ends, line 632 of 8847 in the one measured here. Cached per export so
+-- opening fifty Scala buffers reads it once.
+---@param from string  path to search upward from
+local bloop_cache = {}
+local function bloop_jdk(from)
+  local dir = vim.fs.find(".bloop", { path = from, upward = true, type = "directory" })[1]
+  if not dir then
+    return nil
+  end
+  if bloop_cache[dir] ~= nil then
+    return bloop_cache[dir] or nil
+  end
+
+  local found = false
+  local config = vim.fn.glob(dir .. "/*.json", false, true)[1]
+  if config then
+    local home = table.concat(vim.fn.readfile(config), "\n"):match('"home"%s*:%s*"([^"]+)"')
+    if home and vim.fn.isdirectory(home) == 1 and installed_major(home) then
+      found = home
+    end
+  end
+  bloop_cache[dir] = found
+  return found or nil
+end
+
 -- Returns the JDK path plus whether it satisfies the project's pin, so the
 -- caller can say something useful instead of failing twenty minutes into an
 -- import.
-function M.build_jdk()
-  local pin = pinned_jdk()
-  local want = major(pin)
-  local path = M.find_build_jdk(want)
-  if not path then
-    return nil, pin, false
+-- Resolved from the buffer's own path, not the editor's cwd.
+--
+-- cwd is the wrong anchor: it changes as you move around, so the same
+-- project would resolve a different javaHome depending on where you
+-- happened to be, Metals would notice the setting change and pop
+-- "Java home has been updated, do you want to restart the sbt BSP
+-- server?" on every switch. The buffer's path is stable for a given file
+-- and is also how Metals itself finds the project root.
+---@param from string|nil  path to resolve the pin from; defaults to the buffer
+---@return string|nil jdk, string|nil pin, boolean matches, string source
+function M.build_jdk(from)
+  from = from or vim.api.nvim_buf_get_name(0)
+  if from == "" then
+    from = vim.fn.getcwd()
   end
-  return path, pin, want == nil or installed_major(path) == want
+  local pin = pinned_jdk(from)
+  local want = major(pin)
+
+  local exported = bloop_jdk(from)
+  local path = exported or M.find_build_jdk(want)
+  if not path then
+    return nil, pin, false, "none"
+  end
+  return path, pin, want == nil or installed_major(path) == want, exported and "export" or "pin"
 end
 
 function M.config()
   local metals = require("metals")
   local config = metals.bare_config()
 
-  local jdk, pin, matches = M.build_jdk()
+  local jdk, pin, matches, source = M.build_jdk()
 
   -- Once per project per session. This fires from a FileType autocmd, so
   -- without the guard it would repeat on every Scala buffer you open --
@@ -183,7 +253,11 @@ function M.config()
       )
     elseif pin and not matches then
       vim.notify(
-        ("Metals: JDK %s, project pins %s"):format(vim.fn.fnamemodify(jdk, ":t"), pin),
+        ("Metals: JDK %s (from %s), project pins %s. :MetalsJdk"):format(
+          vim.fn.fnamemodify(jdk, ":t"),
+          source == "export" and ".bloop export" or "installed JDKs",
+          pin
+        ),
         vim.log.levels.WARN
       )
     end
@@ -231,18 +305,25 @@ function M.config()
     bloopJvmProperties = { "-Xmx4G", "-Xss4m" },
     -- Heap for the *build server* (sbt). The internal guide suggests 12G
     -- per project; that is set in .jvmopts at the repo root, not here.
-  }
 
-  -- The Metals server process itself. v1 offloads the expensive work to
-  -- the build server; v2 does the indexing in-process and the docs ask
-  -- for more headroom.
-  --
-  -- NOTE: these are merged after the plugin's own required VM options, so
-  -- they can override them. Verify with
-  --   ps -axo command | grep nvim-metals/metals | tr " " "\n" | grep Xmx
-  -- after a restart -- an earlier server was observed running with none
-  -- of -Xms/-Xmx/-Xss actually applied.
-  config.serverProperties = { v2 and "-Xmx6G" or "-Xmx3G", "-Xss4m" }
+    -- The Metals server process itself. v1 offloads the expensive work to
+    -- the build server; v2 does the indexing in-process and the docs ask
+    -- for more headroom.
+    --
+    -- This belongs *inside* settings, not next to it. nvim-metals wraps
+    -- the whole table under a `metals` key and then reads
+    -- `settings.metals.serverProperties`; a top-level
+    -- `config.serverProperties` is read by nobody and silently does
+    -- nothing, which is how a server ended up running with no -Xmx at all
+    -- -- the -Xss4m and -Xms100m it did have come from the Coursier
+    -- bootstrap, baked in at install time.
+    --
+    -- Merged after the plugin's own required VM options, so these win.
+    -- Verify with
+    --   ps -axo command | grep nvim-metals/metals | tr " " "\n" | grep Xmx
+    -- after a restart.
+    serverProperties = { v2 and "-Xmx6G" or "-Xmx3G", "-Xss4m" },
+  }
 
   -- Pin the JVM the Metals server itself runs on, so it no longer depends
   -- on which shell launched nvim. This matters because the two JDK
@@ -283,10 +364,6 @@ function M.config()
 
   config.init_options.statusBarProvider = "off"
 
-  -- Metals reports compile progress and build status through this; without
-  -- a handler the long first import looks like a hang.
-  config.handlers = config.handlers or {}
-
   config.on_attach = function(_, bufnr)
     local map = function(lhs, rhs, desc)
       vim.keymap.set("n", lhs, rhs, { buffer = bufnr, silent = true, desc = desc })
@@ -294,6 +371,13 @@ function M.config()
     map("<leader>mc", function() require("telescope").extensions.metals.commands() end, "Metals commands")
     map("<leader>mi", metals.import_build, "Import build")
     map("<leader>mr", metals.restart_build_server, "Restart build server")
+    -- Which build server is connected decides whether third-party symbols
+    -- resolve. On a repo with a build tool Metals picks Bloop, and Bloop
+    -- without an export resolves nothing; MBT reads .metals/mbt.json and
+    -- gives you the dependency classpath with no compile at all. The
+    -- choice sticks, so this is a once-per-project key -- but it is the
+    -- one that matters.
+    map("<leader>mb", metals.switch_bsp, "Switch build server (Bloop/MBT/sbt)")
     map("<leader>ml", metals.toggle_logs, "Toggle Metals logs")
     map("<leader>mt", metals.type_of_range, "Type of range")
     map("<leader>mo", metals.organize_imports, "Organize imports")
@@ -322,10 +406,12 @@ return {
     -- The startup warning is deliberately terse; this is where the whole
     -- story lives, on demand.
     vim.api.nvim_create_user_command("MetalsJdk", function()
-      local jdk, pin, matches = M.build_jdk()
+      local jdk, pin, matches, source = M.build_jdk()
       local lines = {
         "Build JDK (what sbt/Bloop will run on):",
         "  " .. (jdk or "none found -- install JDK 8 or 11"),
+        "  source: "
+          .. (source == "export" and ".bloop export (platform.config.home)" or "installed JDKs, picked to match the pin"),
         "Project pin (.java-version):",
         "  " .. (pin or "none"),
         "",
@@ -338,9 +424,19 @@ return {
           "-target:jvm-1.8, so the bytecode stays Java 8 regardless.",
           "The risk is running tests -- this build sets no --add-opens,",
           "which Spark needs for reflective access on JDK 11+.",
-          "",
-          "Fix: sdk install java 8.0.462-tem",
         })
+        if source == "export" then
+          vim.list_extend(lines, {
+            "",
+            "The export wins on purpose: it is what Bloop will compile with.",
+            "Overriding it makes Metals ask to reconnect on every start, and",
+            "accepting invalidates every target compiled so far.",
+            "",
+            "To change it: sdk use java " .. (pin or "<version>") .. " && sbt bloopInstall",
+          })
+        else
+          vim.list_extend(lines, { "", "Fix: sdk install java 8.0.462-tem" })
+        end
       end
       vim.notify(table.concat(lines, "\n"), matches and vim.log.levels.INFO or vim.log.levels.WARN)
     end, { desc = "Which JDK Metals will build with, and whether it matches the project" })
